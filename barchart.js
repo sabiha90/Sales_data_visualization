@@ -1,21 +1,23 @@
-var goodData ;
-function readData(){
-	d3.csv("Visualizations.csv", function(error, data) {
-  		if (error){
-  			throw error;
-  		}else{
-  			console.log(data)
-  		}
+function readData(x){
+d3.csv("Visualizations.csv", function(data) {
+	if(x=="month"){
+		bar_sales_month(data);
+	}else if (x=="year"){
+		sales_by_year(data);
+
+	}
+  			
 });
-	//console.log(goodData)
 }
-
-readData();
-
-
-function updateData(){
-d3.csv("Visualizations.csv", function(csv_data) {
-
+function read_Data_by_month(){
+	readData("month");
+}
+function read_Data_year(){
+	readData("year");
+}
+function bar_sales_month(csv_data){
+//d3.csv("Visualizations.csv", function(csv_data) {
+	//console.log(csv_data);
    var sales_month = d3.nest().key(function(d) { return (d.Month);})
   							  .rollup(function(d) { return d3.mean(d, function(g) {return g.Sales; });
   }).entries(csv_data);
@@ -25,6 +27,29 @@ d3.csv("Visualizations.csv", function(csv_data) {
     	return +a.key-(+b.key);
     });
     //return;
+    bar_chart(sales_month,"Month");
+ }
+
+
+function sales_by_year(csv_data){
+var sales_year = d3.nest().key(function(d) { return (d.Year);})
+  							  .rollup(function(d) { return d3.mean(d, function(g) {return g.Sales; });
+  }).entries(csv_data);
+    
+    //console.log(sales_month);
+    sales_year.sort(function(a,b){
+    	return +a.key-(+b.key);
+    });
+    //return;
+    bar_chart(sales_year,"Year");
+ }
+
+
+
+
+
+
+function bar_chart(data_point,variable){
     var svg = d3.select("svg"),
     margin = {top: 100, right: 20, bottom: 30, left: 90},
     width = +svg.attr("width") - margin.left - margin.right,
@@ -32,12 +57,12 @@ d3.csv("Visualizations.csv", function(csv_data) {
 
 	var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
     	y = d3.scaleLinear().rangeRound([height, 0]);
-
+    svg.selectAll("*").remove();
 	var g = svg.append("g")
     			.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  	x.domain(sales_month.map(function(d) { return d.key; }));
-  	y.domain([0, d3.max(sales_month, function(d) { return d.value; })]);
+  	x.domain(data_point.map(function(d) { return d.key; }));
+  	y.domain([0, d3.max(data_point, function(d) { return d.value; })]);
 
   	g.append("g")
       .attr("class", "axis axis--x")
@@ -45,9 +70,9 @@ d3.csv("Visualizations.csv", function(csv_data) {
       .call(d3.axisBottom(x))
       .append("text")
       .attr("x",width/2)
-      .attr("y",20)
+      .attr("y",30)
       .style("fill","black")
-      .text("Month");
+      .text(variable);
 
   g.append("g")
       .attr("class", "axis axis--y")
@@ -71,7 +96,7 @@ d3.csv("Visualizations.csv", function(csv_data) {
     .text("a simple tooltip");
 
   g.selectAll(".bar")
-    .data(sales_month)
+    .data(data_point)
     .enter().append("rect")
       .attr("class", "bar")
       .attr("x", function(d) { return x(d.key); })
@@ -90,8 +115,7 @@ d3.csv("Visualizations.csv", function(csv_data) {
        .attr("height", function(d) { return height - y(d.value); })
        .attr("y", function(d) { return y(d.value); })
        
-       
-
-});
+      
 }
+
 
