@@ -11,3 +11,9 @@
           width: 80px;
           background: blue;
         }
+
+
+.arc text {
+	font: 12px sans-serif;
+	text-anchor: middle;
+}
